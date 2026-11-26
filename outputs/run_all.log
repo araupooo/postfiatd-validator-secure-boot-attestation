@@ -1,0 +1,129 @@
+validator secure-boot and attestation assessment harness
+run started (UTC): 2026-11-26T17:01:41Z
+python: Python 3.12.3
+pack root: /home/hatch/workspace/goals/postfiat-task-node-connection/hidden_files/task-a41d06ba/pack
+=== inventory_check.py ===
+[PASS] PIN-01: Vendored files match the pinned postfiatd tree (git blob SHA-1 + size).
+       evidence: evidence/pinned-tree-manifest.json
+       value: commit=0085a1ff885d6a446369cf73a4430f75af22be55 files=21
+[PASS] PIN-02: Pinned commit is the LIVE main HEAD re-fetched via the GitHub API at build start.
+       evidence: evidence/pinned-tree-manifest.json (commit_date 2026-10-10T16:53:26Z, merge PR #50, 1.0.9)
+       value: 0085a1ff885d6a446369cf73a4430f75af22be55
+[PASS] KEY-01: Validator signing keys are secp256k1 ECDSA only (token path and seed path).
+       evidence: src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [47, 84, 85]
+       value: secp256k1 uses=3 (token derive, seed generate, seed derive), ed25519 uses=0
+[PASS] KEY-02: [validation_seed] and [validator_token] are mutually exclusive; both set is a fatal config error.
+       evidence: src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [35]
+       value: fatal on both-sections-set: yes
+[PASS] KEY-03: Seed path derives the key pair directly and sets manifest sequence 0 (no manifest indirection).
+       evidence: src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [88]
+       value: seed-path sequence=0
+[PASS] KEY-04: Token path verifies the derived public key equals the manifest signing key before use.
+       evidence: src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [50]
+       value: pk==manifest.signingKey enforced
+[PASS] MFT-01: Manifest::verify() requires BOTH the ephemeral signing-key signature and the master-key signature.
+       evidence: src/xrpld/app/misc/detail/Manifest.cpp lines 209 and 212-213
+       value: verify() calls=2 (signing-key + master)
+[PASS] MFT-02: Master-key revocation is sequence number 0xFFFFFFFF (maximum uint32); no higher sequence exists after it.
+       evidence: src/xrpld/app/misc/detail/Manifest.cpp lines [240]; src/xrpld/app/misc/Manifest.h lines [71]
+       value: revocation sequence=4294967295
+[PASS] MFT-03: Manifest cache accepts a manifest only if its sequence is strictly greater than the stored one.
+       evidence: src/xrpld/app/misc/detail/Manifest.cpp lines [411]
+       value: strictly-greater sequence rule present
+[PASS] MFT-04: A validator token is base64 JSON with 'manifest' and a 32-byte 'validation_secret_key'.
+       evidence: src/xrpld/app/misc/detail/Manifest.cpp lines [289, 295]
+       value: token fields: manifest + validation_secret_key (32 bytes)
+[PASS] MFT-05: Manifest header documents the two-tier design: master key signs a manifest vouching for an ephemeral signing key.
+       evidence: src/xrpld/app/misc/Manifest.h lines [44, 46, 304]
+       value: two-tier master/ephemeral design documented in source
+[PASS] ATT-01: No TPM, Secure Boot, SGX, SEV, enclave, measured-boot, PCR, UEFI or HSM code exists in the pinned tree.
+       evidence: evidence/pinned-tree-paths.txt (1947 paths scanned)
+       value: attestation-related paths=0 (excluding unrelated cross-chain XChainAttestations and test attester helpers)
+[PASS] ATT-02: The only 'attestation' in the tree is cross-chain bridge attestation (XChainAttestations) and a test helper — unrelated to validator boot attestation.
+       evidence: evidence/pinned-tree-paths.txt
+       value: XChainAttestations present; validator boot attestation absent
+[PASS] UNL-01: Mainnet validators file trusts exactly ONE list site and ONE publisher key; threshold 0 (computed = 1).
+       evidence: cfg/validators-mainnet.txt lines [56] (site), [59] (key)
+       value: sites=['https://postfiat.org/testnet_vl.json'] keys=1
+[PASS] UNL-02: The mainnet validators file points at a TESTNET validator-list URL (postfiat.org/testnet_vl.json).
+       evidence: cfg/validators-mainnet.txt lines [56]
+       value: https://postfiat.org/testnet_vl.json
+[PASS] UNL-03: A fetched validator list is accepted only if its signature verifies against the publisher manifest's signing key.
+       evidence: src/xrpld/app/misc/detail/ValidatorList.cpp lines [1406]
+       value: list signature verification present
+[PASS] UNL-04: Revocation of a publisher manifest removes its list and clears pending lists for that publisher.
+       evidence: src/xrpld/app/misc/detail/ValidatorList.cpp lines [1394, 1539, 1547, 2026]
+       value: publisher revocation handling present
+[PASS] UNL-05: Validator list sites may be plain http as well as https (both schemes accepted).
+       evidence: src/xrpld/app/misc/detail/ValidatorSite.cpp lines [57, 281]
+       value: http and https both accepted for list sites
+[PASS] OPS-01: validator-keys.json (master keys) is DELETED whenever the Docker container is restarted or recreated.
+       evidence: docs/ValidatorKeyUpdate.md lines [16]
+       value: master keys are ephemeral inside the container
+[PASS] OPS-02: The documented key workflow copies the master-key file in and out of the container with docker cp / scp (plaintext JSON).
+       evidence: docs/ValidatorKeyUpdate.md lines [24, 45, 214]
+       value: docker cp occurrences=3
+[PASS] OPS-03: Documented signing-key rotation cadence is every 6-12 months; set_domain also rotates the signing key.
+       evidence: docs/ValidatorKeyUpdate.md lines [81, 109]
+       value: rotation cadence 6-12 months
+[PASS] OPS-04: Domain attestation is a web file at https://<domain>/.well-known/pft-ledger.toml — no binding to boot measurements.
+       evidence: docs/DomainAttestation.md lines [11, 157]
+       value: domain attestation = hosted file, not hardware evidence
+[PASS] SUP-01: Docker base image ubuntu:24.04 is referenced by tag, not by digest (no @sha256 pin).
+       evidence: Dockerfile lines [17]
+       value: FROM ubuntu:24.04, no digest pin in Dockerfile
+[PASS] SUP-02: Build fetches unpinned toolchain pieces (apt update, pipx conan, CMake tarball) alongside the pinned source.
+       evidence: Dockerfile lines [30, 39, 40, 41, 48]
+       value: unpinned: apt, conan, cmake tarball
+[PASS] SUP-03: No image signing or digest verification (cosign / @sha256) anywhere in the Dockerfile, deploy workflow, or deployment docs.
+       evidence: Dockerfile + .github/workflows/deploy.yml + docs/DeploymentWorkflows.md
+       value: cosign mentions=0, @sha256 mentions=0
+[PASS] SUP-04: Deploy workflow injects validator tokens from GitHub Secrets over SSH (appleboy/ssh-action) and selects the token by host IP.
+       evidence: .github/workflows/deploy.yml lines [96, 117, 256, 259, 260, 261, 262, 266, 267, 268, 269, 270, 274, 275, 276, 308, 317, 568, 577, 824, 828]
+       value: ssh-action + token secrets + per-host-IP token selection
+[PASS] SUP-05: Deployed image is referenced by mutable tag: deploy rewrites the tag suffix with sed instead of pinning a digest.
+       evidence: .github/workflows/deploy.yml lines [200, 450, 710]
+       value: image tag rewritten by sed at deploy time
+[PASS] SUP-06: validator-keys-tool is fetched by FetchContent pinned to commit 05742108d4b7c0b7d9a97c073acd690d2c75a2b4 (2025-09-05).
+       evidence: cmake/RippledValidatorKeys.cmake lines [9]
+       value: validator-keys-tool commit pinned
+[PASS] SUP-07: Mainnet config documents a [validator_key_revocation] section for compromised-key revocation blobs.
+       evidence: cfg/postfiatd-mainnet-full.cfg lines [722]
+       value: revocation section documented
+[PASS] SUP-08: Container entrypoint starts cron/logrotate and execs postfiatd with no integrity check of the binary or config first.
+       evidence: scripts/docker-entrypoint.sh (27 lines)
+       value: no pre-exec integrity check in entrypoint
+[PASS] CFG-01: Validators disable pathfinding (PATH_SEARCH_MAX = 0) when a validation seed or token is configured.
+       evidence: src/xrpld/core/detail/Config.cpp lines [679]
+       value: pathfinding disabled for validators
+inventory_check: 31/31 checks passed
+=== pcr_model.py ===
+pcr_model: 6/6 cases passed
+golden PCR 0: 55e0f3e900859954256bde81aff4cac3aa7919204bfe26e1059d486bf4a1b51d
+golden PCR 4: 9b423ea7f7fecd81c3e30692e0c46285942dfdd6d6a662831ce18b827d23724c
+golden PCR 7: 22b7b407600d173e7d5c706553f5533d4fa764c4f2cdfcce6cfd56b5051e7c18
+golden PCR 10: 1c9811caa7402d5cf597786e53227f6378bd83ea5e3e0b599b6c5e31575aec00
+=== quote_verify.py ===
+quote_verify: 7/7 cases passed
+AK public key: 04683e4ee5cdf09c114e89efdc5eacd2a272a56fc5222f993d5bf086ac2763a0229d542a691bfeba28c9d190d0cda2530df21575f08ac0b760811efa42bedba654
+golden PCR digest: 18c2eac30ed81c5ffc7ae1ffc9b6332901bcb5c13a12940773e3a0f4639d467e
+control quote signature: 0ccddd0230ce339c46ca371aca1810b8ce7d8ec0bd091be7c7352fce75c920cb55fa9a12c1a1300b4a4a9c6c8c6c7a332a8f6d0ca16180a10197ded4e415220d
+=== seal_model.py ===
+seal_model: 7/7 cases passed
+sealed policy digest: a1a4a5f2d3e200d932031b7159081bddb654ffae7cb60307668e5d1b1ba00a9f
+sealed blob sha256: 5a548b08721f86b1379f06778d90690bc60204786f218d24a174458e66485743
+=== manifest_model.py ===
+manifest_model: 8/8 cases passed
+master public key: 04245cfcd9a93da3e1c2945fdc5ac1a9a15c8e061b4aca1ae3b4d88db2336c8d2bf6a3bddbaf423aa5ac82c4f05cf55d1111756d3d6823207dcb8541edec0c4886
+control manifest canonical sha256: 43137bb431cba2dbc1e5779d5e09a116b6b2a2c61936134d801d9b24e4408deb
+=== coverage.py ===
+coverage: 1 covered, 3 partial, 8 gaps out of 12 stages
+=== output digests (full SHA-256) ===
+6ef6e638f90ba5571f8b3b7d8cccf154b534212b93186826cc820a813536faaa  outputs/coverage.json
+09bf36c617ae555d3fcd372c40cfd819d51be34b64f4a23c5cb0acb2f28b689f  outputs/inventory_check.json
+4f86779ef36f8398994836ec6915fbd4ebbd662d7fc5d359a00bf79dc4c5be6b  outputs/manifest_model.json
+36df1e30b091df658aab0cf5a9abd08db4aa69a65fd96a5645d83a8eca26e375  outputs/pcr_model.json
+ced37bb2d3c522f2142378acf7d11fb59c3c2e1d103444850792721154867e6d  outputs/quote_verify.json
+20b24fdae38cc8d1e98cae1fe99dd0ab3c42ee65bda18b927bf320df9db39153  outputs/seal_model.json
+=== harness complete ===
+run finished (UTC): 2026-11-26T17:01:48Z

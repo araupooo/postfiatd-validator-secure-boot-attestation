@@ -1,0 +1,104 @@
+{
+  "counts": {
+    "COVERED": 1,
+    "GAP": 8,
+    "PARTIAL": 3
+  },
+  "coverage_summary": "1 covered, 3 partial, 8 gaps out of 12 stages",
+  "inventory_checks_passed": "31/31",
+  "label": "MEASURED",
+  "model_cases": {
+    "manifest_model": "8/8",
+    "pcr_model": "6/6",
+    "quote_verify": "7/7",
+    "seal_model": "7/7"
+  },
+  "pinned_commit": "0085a1ff885d6a446369cf73a4430f75af22be55",
+  "rows": [
+    {
+      "in_tree_mechanism": "None. No firmware measurement, no Secure Boot policy, no TPM code in the pinned tree (ATT-01).",
+      "label": "MEASURED",
+      "model": "pcr_model PCR-FM1/FM5: a measured boot WOULD catch tampering and WOULD change on update.",
+      "stage": "Platform firmware (CRTM / BIOS)",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "None in-tree. UEFI Secure Boot is a platform property; the tree never checks it (ATT-01).",
+      "label": "MEASURED",
+      "model": "pcr_model PCR 7 golden value computed; quote_verify Q-FM5 rejects quotes that omit PCR 7.",
+      "stage": "Boot manager / Secure Boot policy (db/dbx/KEK)",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "None in-tree (ATT-01).",
+      "label": "MEASURED",
+      "model": "pcr_model PCR 9 covers kernel + initrd in the simulated chain.",
+      "stage": "Kernel / initramfs",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "None. Image referenced by mutable tag (SUP-05); no digest pinning or cosign (SUP-03); entrypoint performs no integrity check (SUP-08).",
+      "label": "MEASURED",
+      "model": "pcr_model PCR 10 covers image + binary + config in the simulated chain.",
+      "stage": "Container image / postfiatd binary",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "Config-file validation only (mutual-exclusion fatal error, KEY-02). No measurement or sealing of config contents.",
+      "label": "MEASURED",
+      "model": "pcr_model PCR-FM3: an unmeasured config leaves PCR 10 different from golden.",
+      "stage": "Validator config (postfiatd.cfg, validators.txt)",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "Plaintext validator-keys.json, deleted on container restart, copied by docker cp / scp (OPS-01, OPS-02). No sealing, no HSM binding.",
+      "label": "MEASURED",
+      "model": "seal_model SEAL-CONTROL/FM4: a PCR-sealed secret WOULD release only on the matching platform.",
+      "stage": "Validator identity (master key)",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "Two-tier manifest: master signs ephemeral key; token carries manifest + 32-byte secret (KEY-04, MFT-04). No hardware binding of the secret.",
+      "label": "MEASURED",
+      "model": "manifest_model MAN-ROTATE/MAN-FM1: rotation and replay rules verified; seal_model shows how the secret could be PCR-bound.",
+      "stage": "Validator signing key (ephemeral) + token",
+      "status": "PARTIAL"
+    },
+    {
+      "in_tree_mechanism": "Sequence 0xFFFFFFFF revokes the master key permanently; peers enforce monotonic sequences (MFT-02, MFT-03).",
+      "label": "MEASURED",
+      "model": "manifest_model MAN-REV/MAN-FM5: revocation accepted and terminal in the model.",
+      "stage": "Manifest revocation",
+      "status": "COVERED"
+    },
+    {
+      "in_tree_mechanism": "Single publisher key + single site in mainnet file; list signature verified against publisher manifest (UNL-01, UNL-03). Publisher revocation clears lists (UNL-04).",
+      "label": "MEASURED",
+      "model": "No model run: list verification is code, verified by source inspection (UNL-03).",
+      "stage": "Validator list (UNL) trust anchor",
+      "status": "PARTIAL"
+    },
+    {
+      "in_tree_mechanism": "Hosted file at .well-known/pft-ledger.toml (OPS-04). No binding to boot measurements or to the validator key beyond the manifest domain field.",
+      "label": "MEASURED",
+      "model": "quote_verify Q-FM2/Q-FM4: a hardware quote WOULD bind identity to fresh evidence; the file-based check cannot.",
+      "stage": "Domain attestation",
+      "status": "PARTIAL"
+    },
+    {
+      "in_tree_mechanism": "None. No quote, no AK enrollment, no verifier, no reference values anywhere in the tree or deployment (ATT-01).",
+      "label": "MEASURED",
+      "model": "quote_verify Q-CONTROL + Q-FM1..Q-FM6: all six failure modes behave as a verifier should \u2014 in the model only.",
+      "stage": "Remote attestation (TPM quote / enclave report)",
+      "status": "GAP"
+    },
+    {
+      "in_tree_mechanism": "secp256k1 ECDSA only (KEY-01). No ML-DSA/SLH-DSA anywhere; no hybrid path.",
+      "label": "MEASURED",
+      "model": "No model run: algorithm inventory is a source fact (KEY-01). Migration is specified in docs/migration-plan.md.",
+      "stage": "Post-quantum signatures (validator identity, manifests, lists)",
+      "status": "GAP"
+    }
+  ],
+  "stages_total": 12
+}

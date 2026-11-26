@@ -1,0 +1,69 @@
+{
+  "authority_public_key_uncompressed_hex": "042854334f5eac7d1a9afed605f8c5ba39a7d2d3f411cca8776fee83cbd7abd30ffd5e00502a93606f478a1079926f01f4155d71518700ed62f31394da67ce5da3",
+  "cases": [
+    {
+      "actual": "release",
+      "current_policy_digest": "a1a4a5f2d3e200d932031b7159081bddb654ffae7cb60307668e5d1b1ba00a9f",
+      "description": "Unseal on the exact golden boot state releases the secret.",
+      "expected": "release",
+      "id": "SEAL-CONTROL",
+      "passed": true
+    },
+    {
+      "actual": "refuse",
+      "current_policy_digest": "07b045bfb75d17646ba28bc647ae6c8a1f05a8a3c2fb08936ee7d054870a00d1",
+      "description": "Tampered boot manager (PCR 4 changed) refuses unseal.",
+      "expected": "refuse",
+      "id": "SEAL-FM1",
+      "passed": true
+    },
+    {
+      "actual": "refuse",
+      "current_policy_digest": "46dcfbd1867f49e877d0f928a6622b0fb1eb0be8a4ed739ee124bd955eccece1",
+      "description": "Legitimate firmware update (PCR 0 changed) refuses unseal \u2014 sealing is brittle without a signed-policy path.",
+      "expected": "refuse",
+      "id": "SEAL-FM2",
+      "passed": true
+    },
+    {
+      "actual": "release",
+      "current_policy_digest": "46dcfbd1867f49e877d0f928a6622b0fb1eb0be8a4ed739ee124bd955eccece1",
+      "description": "Same firmware update, but with an authority-signed policy digest (PolicyAuthorize model), releases the secret.",
+      "expected": "release",
+      "id": "SEAL-FM3",
+      "passed": true
+    },
+    {
+      "actual": "refuse",
+      "current_policy_digest": "46dcfbd1867f49e877d0f928a6622b0fb1eb0be8a4ed739ee124bd955eccece1",
+      "description": "Same firmware update with an authority signature from a non-authority key refuses unseal.",
+      "expected": "refuse",
+      "id": "SEAL-FM6",
+      "passed": true
+    },
+    {
+      "actual": "refuse",
+      "current_policy_digest": "51072f25096b4909317d24a80f904732bc5dac85872f631c05fda4e2ed8a948f",
+      "description": "Sealed blob copied to a different platform refuses unseal (PCRs do not match).",
+      "expected": "refuse",
+      "id": "SEAL-FM4",
+      "passed": true
+    },
+    {
+      "actual": "refuse",
+      "current_policy_digest": "3b15eb549927f840c330b19882816e96b397ca9f300dcf90a6515d0d52349e6c",
+      "description": "Unseal attempted under a different policy version refuses (policy digest includes the version).",
+      "expected": "refuse",
+      "id": "SEAL-FM5",
+      "passed": true
+    }
+  ],
+  "cases_failed": [],
+  "cases_passed": 7,
+  "cases_run": 7,
+  "label": "SIMULATED",
+  "model": "TPM2 PCR-policy sealing, TCG TPM 2.0 Library Part 3 (TPM2_Create / TPM2_PolicyPCR / TPM2_Unseal / TPM2_PolicyAuthorize)",
+  "note": "Software model of policy logic only. The seal construction is HMAC-based, not a TPM object; no TPM hardware on this machine; no hardware measurement is claimed.",
+  "sealed_blob_sha256": "5a548b08721f86b1379f06778d90690bc60204786f218d24a174458e66485743",
+  "sealed_policy_digest_sha256": "a1a4a5f2d3e200d932031b7159081bddb654ffae7cb60307668e5d1b1ba00a9f"
+}

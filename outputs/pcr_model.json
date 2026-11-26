@@ -1,0 +1,66 @@
+{
+  "boot_chain_stages": 11,
+  "cases": [
+    {
+      "actual": "match",
+      "description": "Replaying the identical boot event log reproduces the golden PCR values.",
+      "expected": "match",
+      "id": "PCR-CONTROL",
+      "passed": true
+    },
+    {
+      "actual": "PCR 0 differs",
+      "description": "Tampered firmware image changes PCR 0; verifier comparing against golden values rejects the boot.",
+      "expected": "PCR 0 differs from golden",
+      "golden_pcr0": "55e0f3e900859954256bde81aff4cac3aa7919204bfe26e1059d486bf4a1b51d",
+      "id": "PCR-FM1",
+      "passed": true,
+      "tampered_pcr0": "73936fb66b1a61a2f9412b3dc3ec2712148457638046689d1fbe1f9815c64ad4"
+    },
+    {
+      "actual": "PCR 9 differs=True PCR 0 differs=False PCR 4 differs=False PCR 7 differs=False",
+      "description": "Reordered boot events within one PCR change that PCR even when the same components are present; other PCRs are unaffected.",
+      "expected": "PCR 9 differs from golden; PCR 0/4/7 unchanged",
+      "id": "PCR-FM2",
+      "passed": true
+    },
+    {
+      "actual": "PCR 10 differs",
+      "description": "Truncated event log (validator config unmeasured) leaves PCR 10 different from golden.",
+      "expected": "PCR 10 differs from golden",
+      "id": "PCR-FM3",
+      "passed": true
+    },
+    {
+      "actual": "lengths 20 vs 32, equal=False",
+      "description": "Verifying a SHA-256 golden value against a SHA-1 bank never matches (bank selection must agree).",
+      "expected": "SHA-1 PCR 0 (20 bytes) != SHA-256 golden PCR 0 (32 bytes)",
+      "id": "PCR-FM4",
+      "passed": true
+    },
+    {
+      "actual": "PCR 0 differs",
+      "description": "A legitimate firmware update changes PCR 0 exactly like tampering does \u2014 golden values must be re-enrolled, or sealing breaks.",
+      "expected": "PCR 0 differs from golden after update",
+      "id": "PCR-FM5",
+      "passed": true,
+      "updated_pcr0": "5d124a1d1595c5112755e04940b1e5a6682369489391a6c2dc5e82d8e17598d4"
+    }
+  ],
+  "cases_failed": [],
+  "cases_passed": 6,
+  "cases_run": 6,
+  "golden_pcrs_sha256": {
+    "0": "55e0f3e900859954256bde81aff4cac3aa7919204bfe26e1059d486bf4a1b51d",
+    "1": "396291f7677d09c7e92a51e7f90d0a6c4de0e9acb6a8098b1c7bd042b693eb18",
+    "2": "437b3d459acb438838654f761a837ba2e2a0448b3a9db75e2290a629767dfa86",
+    "4": "9b423ea7f7fecd81c3e30692e0c46285942dfdd6d6a662831ce18b827d23724c",
+    "5": "5690f4a6368e78153c19a33c49292bc8d0b76e1f17224bb038b233fbc614f110",
+    "7": "22b7b407600d173e7d5c706553f5533d4fa764c4f2cdfcce6cfd56b5051e7c18",
+    "9": "677198bf413f3b254abb389a6a27a82e9a17891885fd657f02f14a119eb74d52",
+    "10": "1c9811caa7402d5cf597786e53227f6378bd83ea5e3e0b599b6c5e31575aec00"
+  },
+  "label": "SIMULATED",
+  "model": "TPM 2.0 PCR extend, TCG TPM 2.0 Library Part 1; PCR assignment per TCG PC Client Platform Firmware Profile v1.06 rev 52",
+  "note": "No TPM hardware on this machine. All values are software-computed from fixed test vectors; no hardware measurement is claimed."
+}

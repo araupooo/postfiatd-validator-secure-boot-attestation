@@ -1,0 +1,69 @@
+{
+  "ak_public_key_uncompressed_hex": "04683e4ee5cdf09c114e89efdc5eacd2a272a56fc5222f993d5bf086ac2763a0229d542a691bfeba28c9d190d0cda2530df21575f08ac0b760811efa42bedba654",
+  "cases": [
+    {
+      "actual": "accept",
+      "description": "Valid quote from the enrolled AK, fresh nonce, golden PCRs is accepted.",
+      "expected": "accept",
+      "id": "Q-CONTROL",
+      "passed": true,
+      "signature_hex": "0ccddd0230ce339c46ca371aca1810b8ce7d8ec0bd091be7c7352fce75c920cb55fa9a12c1a1300b4a4a9c6c8c6c7a332a8f6d0ca16180a10197ded4e415220d"
+    },
+    {
+      "actual": "reject: signature invalid under enrolled AK",
+      "description": "Tampered signature is rejected.",
+      "expected": "reject",
+      "id": "Q-FM1",
+      "passed": true,
+      "signature_hex": "0ccddd0230ce339c46ca371aca1810b8ce7d8ec0bd091be7c7352fce75c920cb55fa9a12c1a1300b4a4a9c6c8c6c7a332a8f0d0ca16180a10197ded4e415220d"
+    },
+    {
+      "actual": "reject: nonce mismatch (stale or replayed quote)",
+      "description": "Replayed quote (stale nonce) is rejected even though the signature is valid.",
+      "expected": "reject",
+      "id": "Q-FM2",
+      "passed": true,
+      "signature_hex": "45f8d14316b56d62875eea16a07ef2329347a7cd4b976cdd78d851d37cabcf894d08f14c283b15aac6533ee2eb00bf7d77a5272c5024ce649000ba6b935699ab"
+    },
+    {
+      "actual": "reject: quoted PCR digest does not match supplied PCR values; PCR values differ from golden reference values",
+      "description": "Quote whose PCR values no longer match the signed digest is rejected.",
+      "expected": "reject",
+      "id": "Q-FM3",
+      "passed": true,
+      "signature_hex": "0ccddd0230ce339c46ca371aca1810b8ce7d8ec0bd091be7c7352fce75c920cb55fa9a12c1a1300b4a4a9c6c8c6c7a332a8f6d0ca16180a10197ded4e415220d"
+    },
+    {
+      "actual": "reject: signature invalid under enrolled AK",
+      "description": "Quote signed by a non-enrolled AK is rejected.",
+      "expected": "reject",
+      "id": "Q-FM4",
+      "passed": true,
+      "signature_hex": "4cfcfc4fe70699bdc134f93d56de6d5ea47b4f9f4ca2f54e462ff7d6af599ee075d8c2bcfd9d1bf3dbcb94688e6c3659fc3a9549fca7e06187d4558e7696e0b9"
+    },
+    {
+      "actual": "reject: PCR selection differs from policy",
+      "description": "Quote omitting a policy-required PCR (PCR 7, Secure Boot policy) is rejected.",
+      "expected": "reject",
+      "id": "Q-FM5",
+      "passed": true,
+      "signature_hex": "53059db757414913da75a193b821b0b80ddb947d37d0feb3dd495c7e0171946f38d28b7aea478692c8a0fbf1012c06a8381165145e63cc781e2eb54600db19e2"
+    },
+    {
+      "actual": "reject: PCR values differ from golden reference values",
+      "description": "Genuine quote after a firmware update is rejected until golden reference values are re-enrolled.",
+      "expected": "reject",
+      "id": "Q-FM6",
+      "passed": true,
+      "signature_hex": "04bc11c601bdae7dbd3bb97e2b780954909adbd16190267f650c94f8287596386751703dd2960ad361c080b0b7f5d523486dbe8a836549dd1304b194303a2c0a"
+    }
+  ],
+  "cases_failed": [],
+  "cases_passed": 7,
+  "cases_run": 7,
+  "golden_pcr_digest_sha256": "18c2eac30ed81c5ffc7ae1ffc9b6332901bcb5c13a12940773e3a0f4639d467e",
+  "label": "SIMULATED",
+  "model": "TPM2_Quote verification, TCG TPM 2.0 Library Part 3; verifier roles per RFC 9334 (RATS)",
+  "note": "No TPM hardware on this machine. AK is a fixed test key; signatures are pure-Python ECDSA P-256, cross-checked against OpenSSL at build time. No hardware measurement is claimed.",
+  "pcr_selection_policy": "sha256:0,1,2,4,7"
+}

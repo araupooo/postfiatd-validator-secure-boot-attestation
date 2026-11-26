@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "actual": "accepted",
+      "description": "First valid manifest (sequence 1) is accepted.",
+      "expected": "accepted",
+      "id": "MAN-CONTROL",
+      "manifest_canonical_sha256": "43137bb431cba2dbc1e5779d5e09a116b6b2a2c61936134d801d9b24e4408deb",
+      "manifest_sequence": 1,
+      "passed": true
+    },
+    {
+      "actual": "accepted",
+      "description": "Rotation to sequence 2 with the same keys is accepted (key rotation path).",
+      "expected": "accepted",
+      "id": "MAN-ROTATE",
+      "manifest_canonical_sha256": "e0e09170b8b73b6e4c47cc438fb95ca61a698bc6a90c9bfc7f861d183948831d",
+      "manifest_sequence": 2,
+      "passed": true
+    },
+    {
+      "actual": "rejected: sequence 1 not greater than stored 2",
+      "description": "Replay of the superseded sequence-1 manifest is rejected (sequence not strictly greater).",
+      "expected": "rejected: sequence",
+      "id": "MAN-FM1",
+      "manifest_canonical_sha256": "43137bb431cba2dbc1e5779d5e09a116b6b2a2c61936134d801d9b24e4408deb",
+      "manifest_sequence": 1,
+      "passed": true
+    },
+    {
+      "actual": "rejected: signature verification failed",
+      "description": "Manifest with a tampered domain (signatures no longer match the content) is rejected.",
+      "expected": "rejected: signature",
+      "id": "MAN-FM2",
+      "manifest_canonical_sha256": "61a8799abbd24c2d584e0283369707c9c1540a2aa47fa5c1e928358736af6ce5",
+      "manifest_sequence": 3,
+      "passed": true
+    },
+    {
+      "actual": "rejected: signature verification failed",
+      "description": "Manifest with a tampered master signature is rejected.",
+      "expected": "rejected: signature",
+      "id": "MAN-FM3",
+      "manifest_canonical_sha256": "dd6c8cc2a82bbd4052d4a562553dcfedae18e62df378027ed536bcaa71145565",
+      "manifest_sequence": 4,
+      "passed": true
+    },
+    {
+      "actual": "accepted",
+      "description": "A fresh peer with no prior manifest for this master key accepts the stale sequence-1 manifest (first-sighting rule) \u2014 the rollback window.",
+      "expected": "accepted",
+      "id": "MAN-FM4",
+      "manifest_canonical_sha256": "43137bb431cba2dbc1e5779d5e09a116b6b2a2c61936134d801d9b24e4408deb",
+      "manifest_sequence": 1,
+      "passed": true
+    },
+    {
+      "actual": "accepted: revoked",
+      "description": "Revocation manifest (sequence 4294967295, master signature only) is accepted and marks the key revoked.",
+      "expected": "accepted: revoked",
+      "id": "MAN-REV",
+      "manifest_canonical_sha256": "59b4082b43c9fa2993da939e44ef4a4aed8f045342797882fe5dcabeabcf76c5",
+      "manifest_sequence": 4294967295,
+      "passed": true
+    },
+    {
+      "actual": "rejected: master key revoked",
+      "description": "After revocation, no further manifest for that master key is accepted (no higher sequence exists).",
+      "expected": "rejected",
+      "id": "MAN-FM5",
+      "manifest_canonical_sha256": "af326bec532f6b11eb0efd44b7a65b20c2b75e27749ec3d1b944bf69b3dea008",
+      "manifest_sequence": 5,
+      "passed": true
+    }
+  ],
+  "cases_failed": [],
+  "cases_passed": 8,
+  "cases_run": 8,
+  "ephemeral_public_key_uncompressed_hex": "04d639e2fbadf361f1235db3dd893306762ff6cf72d919609cda2e846af73055a528a6728e628ca77fbc0bca42325a9db7a5b95635b7fe237aeae30b58904414ca",
+  "label": "SIMULATED",
+  "master_public_key_uncompressed_hex": "04245cfcd9a93da3e1c2945fdc5ac1a9a15c8e061b4aca1ae3b4d88db2336c8d2bf6a3bddbaf423aa5ac82c4f05cf55d1111756d3d6823207dcb8541edec0c4886",
+  "model": "Validator manifest lifecycle per pinned postfiatd src/xrpld/app/misc/Manifest.h and src/xrpld/app/misc/detail/Manifest.cpp (verify, sequence monotonicity, revocation at 0xFFFFFFFF)",
+  "note": "Lifecycle cases are a software model using real secp256k1 ECDSA on fixed test keys; the rules themselves are MEASURED from the pinned source (inventory_check.py MFT-01..MFT-05). No on-network measurement is claimed."
+}

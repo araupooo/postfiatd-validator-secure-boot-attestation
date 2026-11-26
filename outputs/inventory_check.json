@@ -1,0 +1,280 @@
+{
+  "checks": [
+    {
+      "claim": "Vendored files match the pinned postfiatd tree (git blob SHA-1 + size).",
+      "evidence": "evidence/pinned-tree-manifest.json",
+      "id": "PIN-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "commit=0085a1ff885d6a446369cf73a4430f75af22be55 files=21"
+    },
+    {
+      "claim": "Pinned commit is the LIVE main HEAD re-fetched via the GitHub API at build start.",
+      "evidence": "evidence/pinned-tree-manifest.json (commit_date 2026-10-10T16:53:26Z, merge PR #50, 1.0.9)",
+      "id": "PIN-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "0085a1ff885d6a446369cf73a4430f75af22be55"
+    },
+    {
+      "claim": "Validator signing keys are secp256k1 ECDSA only (token path and seed path).",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [47, 84, 85]",
+      "id": "KEY-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "secp256k1 uses=3 (token derive, seed generate, seed derive), ed25519 uses=0"
+    },
+    {
+      "claim": "[validation_seed] and [validator_token] are mutually exclusive; both set is a fatal config error.",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [35]",
+      "id": "KEY-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "fatal on both-sections-set: yes"
+    },
+    {
+      "claim": "Seed path derives the key pair directly and sets manifest sequence 0 (no manifest indirection).",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [88]",
+      "id": "KEY-03",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "seed-path sequence=0"
+    },
+    {
+      "claim": "Token path verifies the derived public key equals the manifest signing key before use.",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorKeys.cpp lines [50]",
+      "id": "KEY-04",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "pk==manifest.signingKey enforced"
+    },
+    {
+      "claim": "Manifest::verify() requires BOTH the ephemeral signing-key signature and the master-key signature.",
+      "evidence": "src/xrpld/app/misc/detail/Manifest.cpp lines 209 and 212-213",
+      "id": "MFT-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "verify() calls=2 (signing-key + master)"
+    },
+    {
+      "claim": "Master-key revocation is sequence number 0xFFFFFFFF (maximum uint32); no higher sequence exists after it.",
+      "evidence": "src/xrpld/app/misc/detail/Manifest.cpp lines [240]; src/xrpld/app/misc/Manifest.h lines [71]",
+      "id": "MFT-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "revocation sequence=4294967295"
+    },
+    {
+      "claim": "Manifest cache accepts a manifest only if its sequence is strictly greater than the stored one.",
+      "evidence": "src/xrpld/app/misc/detail/Manifest.cpp lines [411]",
+      "id": "MFT-03",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "strictly-greater sequence rule present"
+    },
+    {
+      "claim": "A validator token is base64 JSON with 'manifest' and a 32-byte 'validation_secret_key'.",
+      "evidence": "src/xrpld/app/misc/detail/Manifest.cpp lines [289, 295]",
+      "id": "MFT-04",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "token fields: manifest + validation_secret_key (32 bytes)"
+    },
+    {
+      "claim": "Manifest header documents the two-tier design: master key signs a manifest vouching for an ephemeral signing key.",
+      "evidence": "src/xrpld/app/misc/Manifest.h lines [44, 46, 304]",
+      "id": "MFT-05",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "two-tier master/ephemeral design documented in source"
+    },
+    {
+      "claim": "No TPM, Secure Boot, SGX, SEV, enclave, measured-boot, PCR, UEFI or HSM code exists in the pinned tree.",
+      "evidence": "evidence/pinned-tree-paths.txt (1947 paths scanned)",
+      "id": "ATT-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "attestation-related paths=0 (excluding unrelated cross-chain XChainAttestations and test attester helpers)"
+    },
+    {
+      "claim": "The only 'attestation' in the tree is cross-chain bridge attestation (XChainAttestations) and a test helper \u2014 unrelated to validator boot attestation.",
+      "evidence": "evidence/pinned-tree-paths.txt",
+      "id": "ATT-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "XChainAttestations present; validator boot attestation absent"
+    },
+    {
+      "claim": "Mainnet validators file trusts exactly ONE list site and ONE publisher key; threshold 0 (computed = 1).",
+      "evidence": "cfg/validators-mainnet.txt lines [56] (site), [59] (key)",
+      "id": "UNL-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "sites=['https://postfiat.org/testnet_vl.json'] keys=1"
+    },
+    {
+      "claim": "The mainnet validators file points at a TESTNET validator-list URL (postfiat.org/testnet_vl.json).",
+      "evidence": "cfg/validators-mainnet.txt lines [56]",
+      "id": "UNL-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "https://postfiat.org/testnet_vl.json"
+    },
+    {
+      "claim": "A fetched validator list is accepted only if its signature verifies against the publisher manifest's signing key.",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorList.cpp lines [1406]",
+      "id": "UNL-03",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "list signature verification present"
+    },
+    {
+      "claim": "Revocation of a publisher manifest removes its list and clears pending lists for that publisher.",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorList.cpp lines [1394, 1539, 1547, 2026]",
+      "id": "UNL-04",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "publisher revocation handling present"
+    },
+    {
+      "claim": "Validator list sites may be plain http as well as https (both schemes accepted).",
+      "evidence": "src/xrpld/app/misc/detail/ValidatorSite.cpp lines [57, 281]",
+      "id": "UNL-05",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "http and https both accepted for list sites"
+    },
+    {
+      "claim": "validator-keys.json (master keys) is DELETED whenever the Docker container is restarted or recreated.",
+      "evidence": "docs/ValidatorKeyUpdate.md lines [16]",
+      "id": "OPS-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "master keys are ephemeral inside the container"
+    },
+    {
+      "claim": "The documented key workflow copies the master-key file in and out of the container with docker cp / scp (plaintext JSON).",
+      "evidence": "docs/ValidatorKeyUpdate.md lines [24, 45, 214]",
+      "id": "OPS-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "docker cp occurrences=3"
+    },
+    {
+      "claim": "Documented signing-key rotation cadence is every 6-12 months; set_domain also rotates the signing key.",
+      "evidence": "docs/ValidatorKeyUpdate.md lines [81, 109]",
+      "id": "OPS-03",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "rotation cadence 6-12 months"
+    },
+    {
+      "claim": "Domain attestation is a web file at https://<domain>/.well-known/pft-ledger.toml \u2014 no binding to boot measurements.",
+      "evidence": "docs/DomainAttestation.md lines [11, 157]",
+      "id": "OPS-04",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "domain attestation = hosted file, not hardware evidence"
+    },
+    {
+      "claim": "Docker base image ubuntu:24.04 is referenced by tag, not by digest (no @sha256 pin).",
+      "evidence": "Dockerfile lines [17]",
+      "id": "SUP-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "FROM ubuntu:24.04, no digest pin in Dockerfile"
+    },
+    {
+      "claim": "Build fetches unpinned toolchain pieces (apt update, pipx conan, CMake tarball) alongside the pinned source.",
+      "evidence": "Dockerfile lines [30, 39, 40, 41, 48]",
+      "id": "SUP-02",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "unpinned: apt, conan, cmake tarball"
+    },
+    {
+      "claim": "No image signing or digest verification (cosign / @sha256) anywhere in the Dockerfile, deploy workflow, or deployment docs.",
+      "evidence": "Dockerfile + .github/workflows/deploy.yml + docs/DeploymentWorkflows.md",
+      "id": "SUP-03",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "cosign mentions=0, @sha256 mentions=0"
+    },
+    {
+      "claim": "Deploy workflow injects validator tokens from GitHub Secrets over SSH (appleboy/ssh-action) and selects the token by host IP.",
+      "evidence": ".github/workflows/deploy.yml lines [96, 117, 256, 259, 260, 261, 262, 266, 267, 268, 269, 270, 274, 275, 276, 308, 317, 568, 577, 824, 828]",
+      "id": "SUP-04",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "ssh-action + token secrets + per-host-IP token selection"
+    },
+    {
+      "claim": "Deployed image is referenced by mutable tag: deploy rewrites the tag suffix with sed instead of pinning a digest.",
+      "evidence": ".github/workflows/deploy.yml lines [200, 450, 710]",
+      "id": "SUP-05",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "image tag rewritten by sed at deploy time"
+    },
+    {
+      "claim": "validator-keys-tool is fetched by FetchContent pinned to commit 05742108d4b7c0b7d9a97c073acd690d2c75a2b4 (2025-09-05).",
+      "evidence": "cmake/RippledValidatorKeys.cmake lines [9]",
+      "id": "SUP-06",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "validator-keys-tool commit pinned"
+    },
+    {
+      "claim": "Mainnet config documents a [validator_key_revocation] section for compromised-key revocation blobs.",
+      "evidence": "cfg/postfiatd-mainnet-full.cfg lines [722]",
+      "id": "SUP-07",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "revocation section documented"
+    },
+    {
+      "claim": "Container entrypoint starts cron/logrotate and execs postfiatd with no integrity check of the binary or config first.",
+      "evidence": "scripts/docker-entrypoint.sh (27 lines)",
+      "id": "SUP-08",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "no pre-exec integrity check in entrypoint"
+    },
+    {
+      "claim": "Validators disable pathfinding (PATH_SEARCH_MAX = 0) when a validation seed or token is configured.",
+      "evidence": "src/xrpld/core/detail/Config.cpp lines [679]",
+      "id": "CFG-01",
+      "label": "MEASURED",
+      "result": "PASS",
+      "value": "pathfinding disabled for validators"
+    }
+  ],
+  "checks_failed": [],
+  "checks_passed": 31,
+  "checks_run": 31,
+  "label": "MEASURED",
+  "pinned_commit": "0085a1ff885d6a446369cf73a4430f75af22be55",
+  "vendored_sha256": {
+    ".github/workflows/deploy.yml": "abc823a83e5c7bbd5aebb25f00243d24c784d486d48c0e295507d013860a5148",
+    "Dockerfile": "dac28bb4d5980820d03d1937d0980d322e1fa686378c64a4b326f668d6fd397b",
+    "cfg/postfiatd-mainnet-full.cfg": "c51d6921272214e46079a3481702689152074802afe2f49840a18eb1148928b3",
+    "cfg/validators-mainnet.txt": "b30bb7bb6bd42d608c2c260d427e28c3c009564a13bca11001c50c1ba4e6fb63",
+    "cmake/RippledValidatorKeys.cmake": "9a91d89be84444eaf00ca5628f2982456c51bb0dbf121d9b3e5ed3016d588c95",
+    "docs/DeploymentWorkflows.md": "e08a366ca72214ca81cf802f781bf4e3400df8abbc0076ce2d501ce0620a656a",
+    "docs/Docker.md": "4545d2db7657ca597a12292064c2a31a113458c2256575879da7f54a97566c20",
+    "docs/DomainAttestation.md": "9e93b873ddc9c8f987d9d2ca64e095ac3eee06a3cd7c6cf0f0e799b4086e300a",
+    "docs/ValidatorKeyUpdate.md": "25b883458c3bec1d9d8466ca0224770c9089aa1158adc43f86e8e12ba497c9cb",
+    "docs/build/install.md": "86a36cefb015e2b20c067baa6ea2bb35f0102fefc5e789c984365b325c95a6c9",
+    "include/xrpl/protocol/SecretKey.h": "8a82326112c2bf52cbdf135cdb46de0bf3493fbc0a080fe9523ee4f803e365e2",
+    "include/xrpl/protocol/Seed.h": "8a9cd43f1833239e6219d83e71f91f61c6420170b0f382b93580c895b18da142",
+    "scripts/docker-entrypoint.sh": "ddd2d070d3d6f2d07b7941c3a31702bd65fc0813488c50680c0c7deb239da674",
+    "src/libxrpl/protocol/Sign.cpp": "54bc6cf04da049125d0d971dd11439949b33043e8d7d14552e7e5c15d08061c8",
+    "src/xrpld/app/misc/Manifest.h": "3eaf20a71423cf609855273aa8fcb7708f18ed9bfd4a5cca3bf37aab334b6755",
+    "src/xrpld/app/misc/ValidatorKeys.h": "613027eb00ca81ee93d5a53e922c0040cdb1ad3975c5f5c745b6ac7dacddafd7",
+    "src/xrpld/app/misc/detail/Manifest.cpp": "daed8b0177f2fbcd041cd6bec075d3b938eb49dde8159e064396106679a007a2",
+    "src/xrpld/app/misc/detail/ValidatorKeys.cpp": "3cbc4c2fb9f8fa800b6812a266ce9f1dfd97f9137144e368c1c47b1e4b07b4df",
+    "src/xrpld/app/misc/detail/ValidatorList.cpp": "a1499c9c0f43be56ea657b2940701a38898117fb0dbdf83cf481de65cad503d4",
+    "src/xrpld/app/misc/detail/ValidatorSite.cpp": "d7419ffa15d46d0743e09a0f89f7df31dc6fb150579be4cc502c16129274821b",
+    "src/xrpld/core/detail/Config.cpp": "95c64fef64dd41bd505f7e1536cf03c4dfe733238a201d021109e079ca7cd639"
+  }
+}
